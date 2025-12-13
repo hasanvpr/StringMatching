@@ -1,3 +1,4 @@
+//Hasan Yavuz Vapur - 19050111024
 /**
  * PreAnalysis interface for students to implement their algorithm selection logic
  * 
@@ -7,57 +8,65 @@
  * The system will automatically use this analysis if the chooseAlgorithm method
  * returns a non-null value.
  */
-public abstract class PreAnalysis {
-    
-    /**
-     * Analyze the text and pattern to choose the best algorithm
-     * 
-     * @param text The text to search in
-     * @param pattern The pattern to search for
-     * @return The name of the algorithm to use (e.g., "Naive", "KMP", "RabinKarp", "BoyerMoore", "GoCrazy")
-     *         Return null if you want to skip pre-analysis and run all algorithms
-     * 
-     * Tips for students:
-     * - Consider the length of the text and pattern
-     * - Consider the characteristics of the pattern (repeating characters, etc.)
-     * - Consider the alphabet size
-     * - Think about which algorithm performs best in different scenarios
-     */
+abstract class PreAnalysis {
     public abstract String chooseAlgorithm(String text, String pattern);
-    
-    /**
-     * Get a description of your analysis strategy
-     * This will be displayed in the output
-     */
     public abstract String getStrategyDescription();
 }
 
-
-/**
- * Default implementation that students should modify
- * This is where students write their pre-analysis logic
- */
 class StudentPreAnalysis extends PreAnalysis {
-    
+
     @Override
     public String chooseAlgorithm(String text, String pattern) {
-        // TODO: Students should implement their analysis logic here
-        // 
-        // Example considerations:
-        // - If pattern is very short, Naive might be fastest
-        // - If pattern has repeating prefixes, KMP is good
-        // - If pattern is long and text is very long, RabinKarp might be good
-        // - If alphabet is small, Boyer-Moore can be very efficient
-        //
-        // For now, this returns null which means "run all algorithms"
-        // Students should replace this with their logic
-        
-        return null; // Return null to run all algorithms, or return algorithm name to use pre-analysis
+        int n = text.length();
+        int m = pattern.length();
+
+        if (m <= 5) {
+            return "Naive";
+        }
+
+        if (isHighlyRepeating(pattern) || hasRepeatingPrefix(pattern)) {
+            return "KMP";
+        }
+
+        if (m >= 32) {
+            return "BoyerMoore";
+        }
+
+        if (n >= 20000 && m >= 10) {
+            return "RabinKarp";
+        }
+
+        return "GoCrazy";
     }
-    
+
+    private boolean isHighlyRepeating(String pattern) {
+        char first = pattern.charAt(0);
+        int count = 0;
+        for (int i = 0; i < pattern.length(); i++) {
+            if (pattern.charAt(i) == first) count++;
+        }
+        return count >= pattern.length() * 0.6;
+    }
+
+    private boolean hasRepeatingPrefix(String pattern) {
+        if (pattern.length() < 3) return false;
+
+        char c0 = pattern.charAt(0);
+        char c1 = pattern.charAt(1);
+
+        if (c0 == c1 && c1 == pattern.charAt(2)) return true;
+
+        if (pattern.length() >= 4) {
+            return pattern.charAt(0) == pattern.charAt(2) &&
+                   pattern.charAt(1) == pattern.charAt(3);
+        }
+
+        return false;
+    }
+
     @Override
     public String getStrategyDescription() {
-        return "Default strategy - no pre-analysis implemented yet (students should implement this)";
+        return "Hybrid strategy: short->Naive, repeating->KMP, long->BoyerMoore, big text->RabinKarp, else->GoCrazy";
     }
 }
 
@@ -121,3 +130,4 @@ class InstructorPreAnalysis extends PreAnalysis {
         return "Instructor's testing implementation";
     }
 }
+
