@@ -1,5 +1,8 @@
+//Hasan Yavuz Vapur - 19050111024
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 class Naive extends Solution {
     static {
@@ -196,15 +199,96 @@ class BoyerMoore extends Solution {
         System.out.println("BoyerMoore registered");
     }
 
-    public BoyerMoore() {
-    }
+    public BoyerMoore() {}
 
     @Override
     public String Solve(String text, String pattern) {
-        // TODO: Students should implement Boyer-Moore algorithm here
-        throw new UnsupportedOperationException("Boyer-Moore algorithm not yet implemented - this is your homework!");
+        List<Integer> matches = search(text, pattern);
+        return indicesToString(matches);
+    }
+
+    private List<Integer> search(String text, String pattern) {
+        List<Integer> matches = new ArrayList<>();
+
+        final int n = text.length();
+        final int m = pattern.length();
+
+        // Edge cases
+        if (m == 0) {
+            // empty pattern matches at every position 0..n
+            for (int i = 0; i <= n; i++) matches.add(i);
+            return matches;
+        }
+        if (m > n) return matches;
+
+        // Unicode-safe bad character table (char range 0..65535)
+        final int ALPH = 65536;
+        int[] bad = new int[ALPH];
+        Arrays.fill(bad, -1);
+        for (int i = 0; i < m; i++) {
+            bad[pattern.charAt(i)] = i;
+        }
+
+        // Good-suffix preprocessing (suffix[] and shift[] arrays)
+        int[] suffix = new int[m];
+        int[] shift = new int[m];
+
+        // compute suffixes
+        suffix[m - 1] = m;
+        int g = m - 1;
+        int f = 0;
+        for (int i = m - 2; i >= 0; i--) {
+            if (i > g && suffix[i + m - 1 - f] < i - g) {
+                suffix[i] = suffix[i + m - 1 - f];
+            } else {
+                g = i;
+                f = i;
+                while (g >= 0 && pattern.charAt(g) == pattern.charAt(g + m - 1 - f)) {
+                    g--;
+                }
+                suffix[i] = f - g;
+            }
+        }
+
+        // compute shift table
+        Arrays.fill(shift, m);
+        for (int i = m - 1; i >= 0; i--) {
+            if (suffix[i] == i + 1) {
+                for (int j = 0; j < m - 1 - i; j++) {
+                    if (shift[j] == m) shift[j] = m - 1 - i;
+                }
+            }
+        }
+        for (int i = 0; i <= m - 2; i++) {
+            int idx = m - 1 - suffix[i];
+            if (idx >= 0 && idx < m) shift[idx] = m - 1 - i;
+        }
+
+        // Search
+        int s = 0;
+        while (s <= n - m) {
+            int j = m - 1;
+            while (j >= 0 && pattern.charAt(j) == text.charAt(s + j)) {
+                j--;
+            }
+
+            if (j < 0) {
+                matches.add(s);
+                s += shift[0]; // safe overlap handling
+            } else {
+                int bcShift = j - bad[text.charAt(s + j)];
+                int gsShift = shift[j];
+                int move = Math.max(1, Math.max(bcShift, gsShift));
+                s += move;
+            }
+        }
+
+        return matches;
     }
 }
+
+
+
 
 /**
  * TODO: Implement your own creative string matching algorithm
@@ -223,7 +307,97 @@ class GoCrazy extends Solution {
     @Override
     public String Solve(String text, String pattern) {
         // TODO: Students should implement their own creative algorithm here
-        throw new UnsupportedOperationException("GoCrazy algorithm not yet implemented - this is your homework!");
+    List<Integer> out = new ArrayList<>();
+    int n = text.length();
+    int m = pattern.length();
+
+    if (m == 0) {
+        for (int i = 0; i <= n; i++) out.add(i);
+        return indicesToString(out);
+    }
+    if (m > n) return "";
+
+
+    int pMid   = pattern.charAt(m >> 1);
+    int pLast  = pattern.charAt(m - 1);
+
+    boolean[] candidate = new boolean[n];
+    for (int i = 0; i <= n - m; i++) {
+        if (text.charAt(i) == pFirst &&
+            text.charAt(i + (m >> 1)) == pMid &&
+            text.charAt(i + m - 1) == pLast)
+        {
+            candidate[i] = true;
+        }
+    }
+
+    if (m <= 7) {
+        int hash = 0;
+        for (int i = 0; i < m; i++) hash = (hash * 131) + pattern.charAt(i);
+
+        for (int i = 0; i <= n - m; i++) {
+            if (!candidate[i]) continue;
+
+            int h = 0;
+            for (int j = 0; j < m; j++) h = (h * 131) + text.charAt(i + j);
+
+            if (h == hash) {
+                boolean ok = true;
+                for (int j = 0; j < m; j++)
+                    if (text.charAt(i + j) != pattern.charAt(j)) { ok = false; break; }
+
+                if (ok) out.add(i);
+            }
+        }
+
+        return indicesToString(out);
+    }
+
+
+    int[] skip = new int[256];
+    Arrays.fill(skip, m + 1);
+
+    for (int i = 0; i < m; i++)
+        skip[pattern.charAt(i)] = m - i;
+
+    int i = 0;
+
+    while (i <= n - m) {
+
+        if (!candidate[i]) {
+            i += skip[text.charAt(Math.min(n - 1, i + m))];
+            continue;
+        }
+
+        int j = m - 4;
+        boolean ok = true;
+
+        while (j >= 0) {
+            if (text.charAt(i + j)     != pattern.charAt(j) ||
+                text.charAt(i + j + 1) != pattern.charAt(j + 1) ||
+                text.charAt(i + j + 2) != pattern.charAt(j + 2) ||
+                text.charAt(i + j + 3) != pattern.charAt(j + 3))
+            {
+                ok = false;
+                break;
+            }
+            j -= 4;
+        }
+
+       
+        for (int k = j; ok && k >= 0; k--) {
+            if (text.charAt(i + k) != pattern.charAt(k)) ok = false;
+        }
+
+        if (ok) {
+            out.add(i);
+            i += m; 
+        } else {
+            i += skip[text.charAt(i + m - 1)];
+        }
+    }
+
+    return indicesToString(out);
     }
 }
 
