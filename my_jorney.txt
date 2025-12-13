@@ -1,0 +1,14 @@
+Throughout this project, I experienced firsthand how different string-matching algorithms 
+behave in practice compared to theory. 
+The most challenging part was ensuring the correctness of the Boyer-Moore good suffix table—
+small indexing mistakes caused large issues. Designing the GoCrazy algorithm required creativity 
+and deeper understanding, which made it both difficult and insightful. 
+I also realized how important the pre-analysis module is. Choosing the correct algorithm can 
+matter more than the algorithm itself. 
+There were moments when I got stuck, produced wrong outputs, or had inconsistent shifts, but 
+solving these problems accelerated my learning. 
+Overall, I found the assignment educational and motivating. It strengthened my skills in 
+algorithm design, implementation, and performance evaluation. As feedback, I believe the 
+homework effectively combined theoretical understanding with practical application.
+
+Hasan Yavuz VAPUR 	19050111024
