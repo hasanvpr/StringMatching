@@ -317,7 +317,7 @@ class GoCrazy extends Solution {
     }
     if (m > n) return "";
 
-
+    int pFirst = pattern.charAt(0);
     int pMid   = pattern.charAt(m >> 1);
     int pLast  = pattern.charAt(m - 1);
 
